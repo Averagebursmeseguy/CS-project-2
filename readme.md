@@ -10,11 +10,21 @@ We will build the UI with Tkinter and generate things like graphs and histograms
 ## things to include
   - Database tables to track:
       - Habits
-      - daily status (water intake, sleep, homework time, etc)
+      - daily habit log (water intake, sleep, homework time, etc)
       - diary entry
       - mood
   - UI Elements to add:
       - Dynamic goal completion calculation based on daily, monthly or weekly timespans
       - Query functions and sorting goals
       - (hopefully) easy to use UI and menu system
+  - Database features to add:
+      - Create new habits
+          - Add entries to habits
+          - see habit completion
+      - Update habits
+          - Change habit goals
+      - query the habits
+          - aggregate reports
+          - progress calculations
+          - minimum, maximum
 
