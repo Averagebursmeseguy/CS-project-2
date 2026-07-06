@@ -1,4 +1,4 @@
-# CS project 2 - habit/wellness tracker
+# Overview: CS project 2 - habit/wellness tracker
 
 ## About
 We'll be making a simple app that will track the user's wellness and habits along with a short diary entry. Our tech stack will involve:
