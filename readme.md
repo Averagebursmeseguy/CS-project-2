@@ -5,6 +5,7 @@ We'll be making a simple app that will track the user's wellness and habits alon
   - Tkinter(or even ttk) for UI
   - matplotlib for data visualisation
   - And despite **REALLY** wanting to use an ORM, Sqlite3 for Database-related things
+
 (Please read up on how to use these)
 
 We will build the UI with Tkinter and generate things like graphs and histograms with matplotlib. To run calculations, validations and storages we'll use python's Sqlite3.
