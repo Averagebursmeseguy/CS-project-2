@@ -13,4 +13,8 @@ We will build the UI with Tkinter and generate things like graphs and histograms
       - daily status (water intake, sleep, homework time, etc)
       - diary entry
       - mood
+  - UI Elements to add:
+      - Dynamic goal completion calculation based on daily, monthly or weekly timespans
+      - Query functions and sorting goals
+      - (hopefully) easy to use UI and menu system
 
