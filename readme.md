@@ -1,7 +1,9 @@
 # Overview: CS project 2 - habit/wellness tracker
 
 ## About/Problem outline
-We'll be making a simple app that will track the user's wellness and habits along with a short diary entry. Our tech stack will involve:
+We'll be making a simple app that will track the user's wellness and habits along with a short diary entry. The app will allow you to track your habits, set goals for things based on timespan, have daily completion logs and a daily diary and mood logging system. 
+
+Our tech stack will involve:
   - Tkinter(or even ttk) for UI
   - matplotlib for data visualisation
   - And despite **REALLY** wanting to use an ORM, Sqlite3 for Database-related things
