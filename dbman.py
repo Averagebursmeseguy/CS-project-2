@@ -16,10 +16,10 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS habits(
 habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
 set_by_id INTEGER NOT NULL,
 title VARCHAR NOT NULL,
-quantitative VARCHAR NOT NULL CHECK(quantitative IN('TRUE', 'FALSE')),
+quantitative VARCHAR NOT NULL CHECK(quantitative IN('true', 'false')),
 unit VARCHAR,
-timespan TEXT NOT NULL,
-CHECK((quantitative = 'TRUE' AND unit IS NOT NULL) OR (quantitative = 'FALSE' AND unit IS NULL)),
+timespan TEXT NOT NULL CHECK(timespan IN ('daily', 'weekly', 'monthly', 'yearly')),
+CHECK((quantitative = 'true' AND unit IS NOT NULL) OR (quantitative = 'false' AND unit IS NULL)),
 
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
 )""")
@@ -28,7 +28,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS habit_logs(
 habit_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
 habit_id INTEGER NOT NULL,
 timestamp INTEGER NOT NULL,
-progress_quantity INTEGER CHECK((progress_quantity IS NULL OR progress_quantity >= 0.0)),
+progress_quantity REAL CHECK((progress_quantity IS NULL OR progress_quantity >= 0.0)),
 
 FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE CASCADE
 )""")
