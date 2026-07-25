@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import ttk
 
+#This changes window width and height
 frame_width = 800
 frame_height = 600
 
@@ -11,6 +12,7 @@ window.title("CS habit tracker")
 notebook = ttk.Notebook(window)
 notebook.pack(pady = 10, expand = True)
 
+#Individual tab descriptions. Put your UI elements here
 frame1 = ttk.Frame(notebook, width = frame_width, height = frame_height)
 frame1.pack(fill="both", expand= True)
 notebook.add(frame1, text="Dashboard")
