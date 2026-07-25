@@ -16,8 +16,11 @@ cursor.execute("""CREATE TABLE habits(
 habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
 set_by_id INTEGER NOT NULL,
 title VARCHAR NOT NULL,
+quantitative VARCHAR NOT NULL CHECK(quantitative IN('True', 'false')),
+unit VARCHAR,
 timespan TEXT NOT NULL,
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
+CHECK((quantitative = 'TRUE' AND unit IS NOT NULL) OR (quantitative = 'FALSE' AND unit IS NULL))
 )""")
 
 cursor.execute("""CREATE TABLE goals(
