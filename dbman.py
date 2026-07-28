@@ -51,3 +51,8 @@ mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
 
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
 );""")
+
+def fetch_table_info(table):
+    cursor.execute(f"PRAGMA table_info({table})")
+    columns = [row[1] for row in cursor.fetchall()]
+    return columns
