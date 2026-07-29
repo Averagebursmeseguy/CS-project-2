@@ -42,7 +42,8 @@ def refresh_tab_1():
     days = dbman.fetch_column_by_user('daily_logs', 'date_created', 1)
 
     goals_being_done = dbman.count_columns_by_user('goal_id','goals', 1)
-    current_goal_indicator.config(text=f'{goals_being_done} goals total')
+    current_goal_indicator.config(text=f'''{goals_being_done} goals total, {dbman.get_finished_tasks_user(1)} done, {dbman.get_pending_tasks_user(1)} pending''')
+    
     mood_graph.draw_mood_trend(days, moods, 'mood graph')
 
 

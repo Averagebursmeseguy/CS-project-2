@@ -229,7 +229,23 @@ def fetch_specific_data(table, column, query):
     cursor.execute(f"""
     SELECT {column} FROM {table} where {column} = {query}
     """)
-    return cursor.fetchone
+    return cursor.fetchone()[0]
 
 make_dest_data()
 
+#That's it I give up trying to larp having an ORM. Lost too many braincells. Specifics galore.
+
+def get_finished_tasks_user(user):
+    cursor.execute(f"""
+    SELECT COUNT (*) FROM goals WHERE set_by_id = {user} AND state = 'Completed'
+    """)
+    return cursor.fetchone()[0]
+
+def get_pending_tasks_user(user):
+    cursor.execute(f"""
+        SELECT COUNT(*)
+        FROM goals
+        WHERE set_by_id = {user}
+          AND state = 'Pending'
+    """)
+    return cursor.fetchone()[0]
