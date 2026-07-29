@@ -329,9 +329,9 @@ def get_in_progress_tasks_user(user):
     """)
     return cursor.fetchone()[0]
 
-def get_total_habit_prgresses_by_user(user):
+def get_total_habit_prgresses_with_unit_by_user(user):
     cursor.execute(f'''
-    SELECT habits.title, SUM(habit_logs.progress_quantity)
+    SELECT habits.title, SUM(habit_logs.progress_quantity), habits.unit
     FROM habit_logs
     JOIN habits
     ON habit_logs.habit_id = habits.habit_id
@@ -340,4 +340,4 @@ def get_total_habit_prgresses_by_user(user):
     ''')
     return cursor.fetchall()
 
-print(get_total_habit_prgresses_by_user(1))
+print(get_total_habit_prgresses_with_unit_by_user(1))

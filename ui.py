@@ -48,7 +48,7 @@ def refresh_tab_1():
     
     mood_graph.draw_mood_trend(days, moods, 'mood graph')
 
-    mood_graph.draw_habit_progress(['run', 'eat', 'sleep'], [10, 20, 30])
+    mood_graph.draw_habit_progress(dbman.get_total_habit_prgresses_with_unit_by_user(1))
 
 
 def refresh_tab_2():

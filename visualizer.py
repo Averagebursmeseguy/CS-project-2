@@ -40,10 +40,19 @@ class WellnessVisualizer:
         
         return self.canvas_widget
 
-    def draw_habit_progress(self, habits, progress_values, graph_title="Habit Total Progress"):
+    def draw_habit_progress(self, raw_values, graph_title="Habit Total Progress"):
         """
         Generates a bar chart of habit progress totals and renders it inside the Tkinter frame.
         """
+
+        habits = []
+        progress_values = []
+
+        #quick and dirty un-tupler for result parsing
+        for value in raw_values:
+            habits.append(f"{value[0]} ({value[2]})")
+            progress_values.append(value[1])
+
 
         #  Destroy previous plot if it already exists
         if self.canvas_widget2:
