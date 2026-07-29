@@ -31,7 +31,7 @@ log_form = forms.DailyLog(frame2)
 
 frame3 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame3, text="Create Habit")
-habit_form = forms.HabitForm(frame3)
+habit_form = forms.HabitForm(frame3, current_user=1)
 
 
 frame4 = ttk.Frame(notebook, width=frame_width, height=frame_height)

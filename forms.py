@@ -1,13 +1,15 @@
 import tkinter
 from tkinter import ttk
+import dbman
 
 # Standard font setup
 font = ("Serif", 15)
 
 
 class HabitForm():
-    def __init__(self, master) -> None:
+    def __init__(self, master, current_user) -> None:
         self.master = master
+        self.current_user = current_user
 
         # Variable to track the Checkbutton status (True = Checked, False = Unchecked)
         self.is_quant_var = tkinter.BooleanVar()
@@ -57,13 +59,19 @@ class HabitForm():
     def get_habit_data(self):
         """Extracts data from the habit form as a list when the submit button is clicked."""
         title = self.title_input.get()
-        is_quant = self.is_quant_var.get()
-        unit = self.unit_input.get()
+        if self.is_quant_var.get() == True:
+            is_quant = 'true' 
+        else:
+            is_quant = 'false'
+
+        if self.unit_input.get() != "":
+            unit = self.unit_input.get()
+        else:
+            unit = None
         timespan = self.timespan_input.get()
 
-        data_list = [title, is_quant, unit, timespan]
-        print("Collected Habit Data:", data_list)
-        return data_list
+        dbman.create_new_habit(self.current_user, title, is_quant, unit, timespan)
+
 
 
 class DailyLog():

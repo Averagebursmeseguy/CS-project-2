@@ -304,6 +304,13 @@ def fetch_specific_data(table, column, query):
 make_dest_data()
 
 #That's it I give up trying to larp having an ORM. Lost too many braincells. Specifics galore.
+def create_new_habit(user, title, quantitative, unit, timespan):
+    print(f'{user}, {title}, {quantitative}, {unit}, {timespan}')
+    cursor.execute(f"""
+    INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
+    VALUES (?, ?, ?, ?, ?);
+    """, (user, title, quantitative, unit, timespan))
+    con.commit()
 
 def get_finished_tasks_user(user):
     cursor.execute(f"""
