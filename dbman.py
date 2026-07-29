@@ -194,6 +194,76 @@ def make_dest_data():
         VALUES(1, 'Meditate consistently for a month', 'Pending');
         """)
 
+        cursor.execute("""
+        INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
+        VALUES(1, 'Drink Water', 'true', 'litres', 'daily');
+        """)
+
+        cursor.execute("""
+        INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
+        VALUES(1, 'Meditate', 'true', 'minutes', 'daily');
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567890, 1.8);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567890, 10);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567891, 2.1);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567891, 15);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567892, 2.5);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567892, 20);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567893, 1.9);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567893, 12);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567894, 2.3);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567894, 18);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(3, 1234567895, 2.0);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(4, 1234567895, 25);
+        """)
+
         print('test data made')
         con.commit()
 
@@ -249,3 +319,25 @@ def get_pending_tasks_user(user):
           AND state = 'Pending'
     """)
     return cursor.fetchone()[0]
+
+def get_in_progress_tasks_user(user):
+    cursor.execute(f"""
+        SELECT COUNT(*)
+        FROM goals
+        WHERE set_by_id = {user}
+          AND state = 'In Progress'
+    """)
+    return cursor.fetchone()[0]
+
+def get_total_habit_prgresses_by_user(user):
+    cursor.execute(f'''
+    SELECT habits.title, SUM(habit_logs.progress_quantity)
+    FROM habit_logs
+    JOIN habits
+    ON habit_logs.habit_id = habits.habit_id
+    WHERE habits.quantitative = 'true' AND set_by_id = {user}
+    GROUP BY habits.title
+    ''')
+    return cursor.fetchall()
+
+print(get_total_habit_prgresses_by_user(1))

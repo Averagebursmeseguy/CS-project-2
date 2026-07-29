@@ -44,17 +44,11 @@ def refresh_tab_1():
     days = dbman.fetch_column_by_user('daily_logs', 'date_created', 1)
 
     goals_being_done = dbman.count_columns_by_user('goal_id','goals', 1)
-    current_goal_indicator.config(text=f'''{goals_being_done} goals total, {dbman.get_finished_tasks_user(1)} done, {dbman.get_pending_tasks_user(1)} pending''')
+    current_goal_indicator.config(text=f'''{goals_being_done} goals total, {dbman.get_finished_tasks_user(1)} done, {dbman.get_pending_tasks_user(1)} pending, {dbman.get_in_progress_tasks_user(1)} tasks in progress.''')
     
     mood_graph.draw_mood_trend(days, moods, 'mood graph')
 
-    # Fetch habit progress data for the bar chart
-    habits = dbman.fetch_unique('title', 'habits', True)
-    progress_values = dbman.fetch_column_by_user('habit_logs', 'progress', 1)
-
-    # Draws the habit progress bar chart if data exists
-    if habits and progress_values:
-        mood_graph.draw_habit_progress(habits, progress_values, 'Habit Total Progress')
+    mood_graph.draw_habit_progress(['run', 'eat', 'sleep'], [10, 20, 30])
 
 
 def refresh_tab_2():

@@ -8,6 +8,7 @@ class WellnessVisualizer:
         """
         self.parent = parent_frame
         self.canvas_widget = None
+        self.canvas_widget2 = None
 
     def draw_mood_trend(self, days, mood_scores, graph_title):
         """
@@ -45,8 +46,8 @@ class WellnessVisualizer:
         """
 
         #  Destroy previous plot if it already exists
-        if self.canvas_widget:
-            self.canvas_widget.destroy()
+        if self.canvas_widget2:
+            self.canvas_widget2.destroy()
 
         #  Create a Matplotlib figure and axis
         fig, ax = plt.subplots(figsize=(6, 3.5), dpi=100)
@@ -74,8 +75,8 @@ class WellnessVisualizer:
 
         # Embedes the plot inside the Tkinter parent frame
         canvas = FigureCanvasTkAgg(fig, master=self.parent)
-        self.canvas_widget = canvas.get_tk_widget()
-        self.canvas_widget.pack(fill='both', expand=True)
+        self.canvas_widget2 = canvas.get_tk_widget()
+        self.canvas_widget2.pack(fill='both', expand=True)
         canvas.draw()
         
-        return self.canvas_widget
+        return self.canvas_widget2
