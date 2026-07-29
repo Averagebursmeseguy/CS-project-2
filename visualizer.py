@@ -14,14 +14,14 @@ class WellnessVisualizer:
         Generates a line plot of weekly mood scores and renders it inside the Tkinter frame.
         """
 
-        # 0. Destroy if already exists
+        #  Destroy previous plot if it already exists
         if self.canvas_widget:
             self.canvas_widget.destroy()
 
-        # 1. Create a Matplotlib figure and axis
+        # Create a Matplotlib figure and axis
         fig, ax = plt.subplots(figsize=(6, 3.5), dpi=100)
         
-        # 2. Build the mood trend chart
+        #  Build the mood trend chart
         ax.plot(days, mood_scores, marker='o', color='#8854d0', linewidth=2.5)
         ax.set_title(graph_title, fontsize=11, fontweight='bold')
         ax.set_xlabel('Day')
@@ -31,7 +31,48 @@ class WellnessVisualizer:
         
         plt.tight_layout()
 
-        # 3. Embed the plot inside the Tkinter parent frame
+        #  Embed the plot inside the Tkinter parent frame
+        canvas = FigureCanvasTkAgg(fig, master=self.parent)
+        self.canvas_widget = canvas.get_tk_widget()
+        self.canvas_widget.pack(fill='both', expand=True)
+        canvas.draw()
+        
+        return self.canvas_widget
+
+    def draw_habit_progress(self, habits, progress_values, graph_title="Habit Total Progress"):
+        """
+        Generates a bar chart of habit progress totals and renders it inside the Tkinter frame.
+        """
+
+        #  Destroy previous plot if it already exists
+        if self.canvas_widget:
+            self.canvas_widget.destroy()
+
+        #  Create a Matplotlib figure and axis
+        fig, ax = plt.subplots(figsize=(6, 3.5), dpi=100)
+        
+        #  Build the habit progress bar chart
+        bars = ax.bar(habits, progress_values, color='#4C72B0', edgecolor='black')
+        ax.set_title(graph_title, fontsize=11, fontweight='bold')
+        ax.set_xlabel('Habit Name')
+        ax.set_ylabel('Total Progress')
+        ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+        # Add data labels on top of each bar
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(
+                bar.get_x() + bar.get_width() / 2, 
+                yval + 0.1, 
+                f'{yval}', 
+                ha='center', 
+                va='bottom', 
+                fontsize=9
+            )
+        
+        plt.tight_layout()
+
+        # Embedes the plot inside the Tkinter parent frame
         canvas = FigureCanvasTkAgg(fig, master=self.parent)
         self.canvas_widget = canvas.get_tk_widget()
         self.canvas_widget.pack(fill='both', expand=True)
