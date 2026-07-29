@@ -15,7 +15,12 @@ notebook.pack(pady = 10,padx=20, expand = True)
                 
 #Individual tab descriptions. Put your UI elements here
 frame1 = ttk.Frame(notebook, width = frame_width, height = frame_height)
+current_goal_indicator = ttk.Label(text="no goals running", font=forms.font, master=frame1)
+current_goal_indicator.pack()
+
+
 notebook.add(frame1, text="Dashboard")
+mood_graph = visualizer.WellnessVisualizer(frame1)
 
 
 frame2 = ttk.Frame(notebook, width=frame_width, height=frame_height)
@@ -33,10 +38,14 @@ notebook.add(frame4, text="History")
 
 def refresh_tab_1():
     #updates the dashboard graphics and whatnot
-    moods = dbman.fetch_column("daily_logs", "mood_score")
-    
-    mood_graph = visualizer.WellnessVisualizer(frame1)
-    mood_graph.draw_mood_trend([1, 2, 3, 4, 5, 6],moods)
+    moods = dbman.fetch_column_by_user("daily_logs", "mood_score", 1)
+    days = dbman.fetch_column_by_user('daily_logs', 'date_created', 1)
+
+    goals_being_done = dbman.count_columns_by_user('goal_id','goals', 1)
+    current_goal_indicator.config(text=f'{goals_being_done} goals total')
+    mood_graph.draw_mood_trend(days, moods, 'mood graph')
+
+
 
 def refresh_tab_2():
     # dynamically changes habit log dropdown options.

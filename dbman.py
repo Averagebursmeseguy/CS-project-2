@@ -47,7 +47,9 @@ log_id INTEGER PRIMARY KEY AUTOINCREMENT,
 set_by_id INTEGER NOT NULL,
 title VARCHAR NOT NULL,
 content TEXT NOT NULL,
+date_created TEXT NOT NULL,
 mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
+
 
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
 );""")
@@ -97,8 +99,8 @@ def make_dest_data():
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log1', 'this is a test log used for testing', 5);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+        VALUES(1, 'log1', 'this is a test log used for testing', '2000-01-1', 5);
         """)
 
         cursor.execute("""
@@ -128,28 +130,68 @@ def make_dest_data():
 
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log2', 'Completed my habits and felt productive today.', 8);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score )
+        VALUES(1, 'log2', 'Completed my habits and felt productive today.', '2000-01-02', 8);
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log3', 'Had a busy day but managed to stay consistent.', 7);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+        VALUES(1, 'log3', 'Had a busy day but managed to stay consistent.', '2000-01-03', 7);
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log4', 'Missed one habit but reflected on what went wrong.', 5);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+        VALUES(1, 'log4', 'Missed one habit but reflected on what went wrong.', '2000-01-04', 5);
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log5', 'Finished my goals early and had extra free time.', 9);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+        VALUES(1, 'log5', 'Finished my goals early and had extra free time.', '2000-01-05', 6);
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
-        VALUES(1, 'log6', 'Tried a new routine and tracked my progress.', 6);
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+        VALUES(1, 'log6', 'Tried a new routine and tracked my progress.', '2000-01-06', 7);
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Complete 30 day exercise streak', 'Pending');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Read 5 books this year', 'In Progress');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Maintain daily journaling habit', 'Completed');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Run a 10km race', 'Pending');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Improve sleep schedule', 'In Progress');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Drink enough water every day', 'Completed');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Learn Python advanced concepts', 'In Progress');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'Meditate consistently for a month', 'Pending');
         """)
 
         print('test data made')
@@ -166,9 +208,15 @@ def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple] | None:
     if nocolumn:
         return [row[0] for row in cursor.fetchall()]
 
-def fetch_column(table, column):
+def count_columns_by_user(column_to_count, table, userID):
     cursor.execute(f"""
-    SELECT {column} from {table}
+    SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = {userID}
+    """)
+    return cursor.fetchone()[0]
+
+def fetch_column_by_user(table, column, userID):
+    cursor.execute(f"""
+    SELECT {column} from {table} WHERE set_by_id = {userID}
     """)
     return [row[0] for row in cursor.fetchall()]
 
