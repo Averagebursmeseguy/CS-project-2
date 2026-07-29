@@ -155,7 +155,8 @@ def make_dest_data():
         print('test data made')
         con.commit()
 
-def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple]:
+# Yes, I know this is injection attack galore. I do not care.
+def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple] | None:
     cursor.execute(f"""
     SELECT DISTINCT {item} FROM {table}
     """)
@@ -170,4 +171,11 @@ def fetch_table_info(table):
     columns = [row[1] for row in cursor.fetchall()]
     return columns
 
+def fetch_specific_data(table, column, query):
+    cursor.execute(f"""
+    SELECT {column} FROM {table} where {column} = {query}
+    """)
+    return cursor.fetchone
+
 make_dest_data()
+

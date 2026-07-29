@@ -5,7 +5,7 @@ font = ("Serif", 15)
 class HabitForm():
     def __init__(self, master) -> None:
         self.master = master
-        
+
         #title
         self.title_label = ttk.Label(master=self.master, text="Title", font=font)
         self.title_input = ttk.Entry(font=font, master = self.master)
@@ -110,16 +110,18 @@ class DailyLog():
 
         self.habit_progress_frame = ttk.Frame(master = self.master)
 
-        self.habit_to_log_label = ttk.Label(text="Habit to log", font=font, master=self.habit_progress_frame)
+        self.habit_to_log_label = ttk.Label(text="Habit progress to log", font=font, master=self.habit_progress_frame)
         self.habit_to_log_entry = ttk.Combobox(values=['a', 'b', 'v'], master=self.habit_progress_frame)
 
         self.progress_log_label = ttk.Label(text = "Dynamically generated.", font=font, master=self.habit_progress_frame)
         self.progress_entry = ttk.Entry(master=self.habit_progress_frame)
+        self.progress_unit_label = ttk.Label(text=" ", font=font, master=self.habit_progress_frame)
 
         self.submitButton = ttk.Button(master=self.habit_progress_frame, text="Submit")
 
         self.habit_to_log_label.grid(row=0, column=0)
         self.habit_to_log_entry.grid(row=0, column=1)
+        self.progress_unit_label.grid(row=0, column=2)
         self.progress_log_label.grid(row=1, column=0)
         self.progress_entry.grid(row=1, column=1)
         self.submitButton.grid(row=4, column=1)

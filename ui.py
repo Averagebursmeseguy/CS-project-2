@@ -38,6 +38,8 @@ def refresh_tab_2():
     hobbies = dbman.fetch_unique('title', 'habits', True)
     log_form.habit_to_log_entry.config(values=hobbies) #this is a temporary measure. TODO: Fix later so that it returns actual list
 
+    #TODO: Dynamically change unit context with selected habit
+
 #Executes on tab change, used to call various helper scripts
 def handle_tab_change(event):
     selected_tab = notebook.tab(notebook.select(), 'text')
