@@ -2,6 +2,9 @@ import tkinter
 from tkinter import ttk
 import dbman, forms
 
+
+
+
 #This changes window width and height
 frame_width = 1000
 frame_height = 600
@@ -21,11 +24,32 @@ frame2 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame2, text="Log Progress")
 log_form = forms.DailyLog(frame2)
 
+
 frame3 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame3, text="Create Habit")
 habit_form = forms.HabitForm(frame3)
 
+
 frame4 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame4, text="History")
 
+def refresh_tab_2():
+    # dynamically changes habit log dropdown options.
+    hobbies = dbman.fetch_unique('title', 'habits', True)
+    log_form.habit_to_log_entry.config(values=hobbies) #this is a temporary measure. TODO: Fix later so that it returns actual list
+
+#Executes on tab change, used to call various helper scripts
+def handle_tab_change(event):
+    selected_tab = notebook.tab(notebook.select(), 'text')
+    match selected_tab:
+        case "Log Progress":
+            refresh_tab_2()
+
+notebook.bind("<<NotebookTabChanged>>", handle_tab_change)
+
+
+
 window.mainloop()
+
+
+

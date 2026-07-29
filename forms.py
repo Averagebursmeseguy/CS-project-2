@@ -5,8 +5,7 @@ font = ("Serif", 15)
 class HabitForm():
     def __init__(self, master) -> None:
         self.master = master
-
-
+        
         #title
         self.title_label = ttk.Label(master=self.master, text="Title", font=font)
         self.title_input = ttk.Entry(font=font, master = self.master)

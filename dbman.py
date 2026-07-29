@@ -52,7 +52,122 @@ mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
 );""")
 
+#Seed data creation script
+
+def make_dest_data():
+
+    cursor.execute("""
+    SELECT * FROM users where name = 'test_user'
+    """)
+    if cursor.fetchone():
+        print('test data exists. Skipped making.')
+        pass
+
+    else:
+        print('No test data. Making...')
+
+        cursor.execute("""
+        INSERT INTO users(name, password, email)
+        VALUES('test_user', 'test_password_1234', 'bob@bobmail.com');
+        """)
+
+        cursor.execute("""
+        INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
+        VALUES(1, 'test habit 1', 'true', 'unit', 'daily');
+        """)
+
+        cursor.execute("""
+        INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
+        VALUES(1, 'test habit 2', 'false', NULL, 'weekly');
+        """)
+
+        cursor.execute("""
+        INSERT INTO goals(set_by_id, title, state)
+        VALUES(1, 'test goal 1', 'In Progress');
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(1, 1234567890, 2.2);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(2, 1234567890, NULL);
+        """)
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log1', 'this is a test log used for testing', 5);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(1, 1234567891, 3.5);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(2, 1234567891, NULL);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(1, 1234567892, 4.0);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(2, 1234567892, NULL);
+        """)
+
+        cursor.execute("""
+        INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+        VALUES(1, 1234567893, 1.8);
+        """)
+
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log2', 'Completed my habits and felt productive today.', 8);
+        """)
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log3', 'Had a busy day but managed to stay consistent.', 7);
+        """)
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log4', 'Missed one habit but reflected on what went wrong.', 5);
+        """)
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log5', 'Finished my goals early and had extra free time.', 9);
+        """)
+
+        cursor.execute("""
+        INSERT INTO daily_logs(set_by_id, title, content, mood_score)
+        VALUES(1, 'log6', 'Tried a new routine and tracked my progress.', 6);
+        """)
+
+        print('test data made')
+        con.commit()
+
+def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple]:
+    cursor.execute(f"""
+    SELECT DISTINCT {item} FROM {table}
+    """)
+
+    if not nocolumn:
+        return cursor.fetchall()
+    if nocolumn:
+        return [row[0] for row in cursor.fetchall()]
+
 def fetch_table_info(table):
     cursor.execute(f"PRAGMA table_info({table})")
     columns = [row[1] for row in cursor.fetchall()]
     return columns
+
+make_dest_data()
