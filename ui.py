@@ -1,9 +1,6 @@
 import tkinter
 from tkinter import ttk
-import dbman, forms
-
-
-
+import dbman, forms, visualizer
 
 #This changes window width and height
 frame_width = 1000
@@ -20,6 +17,7 @@ notebook.pack(pady = 10,padx=20, expand = True)
 frame1 = ttk.Frame(notebook, width = frame_width, height = frame_height)
 notebook.add(frame1, text="Dashboard")
 
+
 frame2 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame2, text="Log Progress")
 log_form = forms.DailyLog(frame2)
@@ -32,6 +30,13 @@ habit_form = forms.HabitForm(frame3)
 
 frame4 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame4, text="History")
+
+def refresh_tab_1():
+    #updates the dashboard graphics and whatnot
+    moods = dbman.fetch_column("daily_logs", "mood_score")
+    
+    mood_graph = visualizer.WellnessVisualizer(frame1)
+    mood_graph.draw_mood_trend([1, 2, 3, 4, 5, 6],moods)
 
 def refresh_tab_2():
     # dynamically changes habit log dropdown options.
@@ -46,6 +51,9 @@ def handle_tab_change(event):
     match selected_tab:
         case "Log Progress":
             refresh_tab_2()
+
+        case "Dashboard":
+            refresh_tab_1()
 
 notebook.bind("<<NotebookTabChanged>>", handle_tab_change)
 

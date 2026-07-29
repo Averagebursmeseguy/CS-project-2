@@ -37,7 +37,9 @@ class HabitForm():
 
         self.timespan_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
         self.timespan_input.grid(row=3, column=1, padx=10, pady=10)
-        
+
+    def doNothing(self, a, b):
+        return
 
 class DailyLog():
     def __init__(self, master) -> None:

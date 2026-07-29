@@ -166,6 +166,12 @@ def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple] | None:
     if nocolumn:
         return [row[0] for row in cursor.fetchall()]
 
+def fetch_column(table, column):
+    cursor.execute(f"""
+    SELECT {column} from {table}
+    """)
+    return [row[0] for row in cursor.fetchall()]
+
 def fetch_table_info(table):
     cursor.execute(f"PRAGMA table_info({table})")
     columns = [row[1] for row in cursor.fetchall()]
