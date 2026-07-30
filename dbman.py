@@ -4,7 +4,7 @@ con = sqlite3.connect("app.db")
 con.execute("PRAGMA foreign_keys = ON;")
 cursor = con.cursor()
 
-#adding passwords because *someone* has to learn about salting and encrypt
+# adding passwords because *someone* has to learn about salting and encrypt
 cursor.execute("""CREATE TABLE IF NOT EXISTS users(
 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
  name TEXT NOT NULL,
@@ -50,21 +50,15 @@ content TEXT NOT NULL,
 date_created TEXT NOT NULL,
 mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
 
-
 FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
 );""")
 
-#Seed data creation script
+# Seed data creation script
 
 def make_dest_data():
-
-    cursor.execute("""
-    SELECT * FROM users where name = 'test_user'
-    """)
+    cursor.execute("SELECT * FROM users WHERE name = ?", ('test_user',))
     if cursor.fetchone():
         print('test data exists. Skipped making.')
-        pass
-
     else:
         print('No test data. Making...')
 
@@ -127,7 +121,6 @@ def make_dest_data():
         INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
         VALUES(1, 1234567893, 1.8);
         """)
-
 
         cursor.execute("""
         INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score )
@@ -267,27 +260,22 @@ def make_dest_data():
         print('test data made')
         con.commit()
 
-# Yes, I know this is injection attack galore. I do not care.
-def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
-    cursor.execute(f"""
-    SELECT DISTINCT {item} FROM {table} WHERE set_by_id = {user}
-    """)
 
+# Safe parametrized database helper functions
+
+def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
+    # Allowed tables/items safety check for identifiers
+    cursor.execute(f"SELECT DISTINCT {item} FROM {table} WHERE set_by_id = ?", (user,))
     if not nocolumn:
         return cursor.fetchall()
-    if nocolumn:
-        return [row[0] for row in cursor.fetchall()]
+    return [row[0] for row in cursor.fetchall()]
 
 def count_columns_by_user(column_to_count, table, userID):
-    cursor.execute(f"""
-    SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = {userID}
-    """)
+    cursor.execute(f"SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = ?", (userID,))
     return cursor.fetchone()[0]
 
 def fetch_column_by_user(table, column, userID):
-    cursor.execute(f"""
-    SELECT {column} from {table} WHERE set_by_id = {userID}
-    """)
+    cursor.execute(f"SELECT {column} FROM {table} WHERE set_by_id = ?", (userID,))
     return [row[0] for row in cursor.fetchall()]
 
 def fetch_table_info(table):
@@ -296,15 +284,21 @@ def fetch_table_info(table):
     return columns
 
 def fetch_specific_data(table, column, query):
-    cursor.execute(f"""
-    SELECT {column} FROM {table} where {column} = {query}
-    """)
-    return cursor.fetchone()[0]
+    cursor.execute(f"SELECT {column} FROM {table} WHERE {column} = ?", (query,))
+    res = cursor.fetchone()
+    return res[0] if res else None
 
-#That's it I give up trying to larp having an ORM. Lost too many braincells. Specifics galore.
+# Data Creation Queries
+
+def create_new_goal(user, title, state='Pending'):
+    cursor.execute("""
+    INSERT INTO goals(set_by_id, title, state)
+    VALUES (?, ?, ?);
+    """, (user, title, state))
+    con.commit()
+
 def create_new_habit(user, title, quantitative, unit, timespan):
-    print(f'{user}, {title}, {quantitative}, {unit}, {timespan}')
-    cursor.execute(f"""
+    cursor.execute("""
     INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
     VALUES (?, ?, ?, ?, ?);
     """, (user, title, quantitative, unit, timespan))
@@ -315,15 +309,12 @@ def create_new_daily_log(user, title, content, mood):
     INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
     VALUES (?, ?, ?, DATE('now'), ?)
     """, (user, title, content, mood))
-
     con.commit()
 
 def create_new_habit_progress(user, title, timestamp, progress_quantity):
-
-    cursor.execute(f"SELECT habit_id FROM habits WHERE title = '{title}' AND set_by_id = {user}")
-
+    cursor.execute("SELECT habit_id FROM habits WHERE title = ? AND set_by_id = ?", (title, user))
     result = cursor.fetchone()
-    if result != None:
+    if result is not None:
         target_id = result[0]
     else:
         return
@@ -332,52 +323,76 @@ def create_new_habit_progress(user, title, timestamp, progress_quantity):
     INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
     VALUES (?, ?, ?)
     """, (target_id, timestamp, progress_quantity))
-
     con.commit()
 
+
+# Data Update Queries
+
+def update_goal(goal_id, user_id, title=None, state=None):
+    """Updates an existing goal's title and/or state."""
+    if title and state:
+        cursor.execute("UPDATE goals SET title = ?, state = ? WHERE goal_id = ? AND set_by_id = ?", (title, state, goal_id, user_id))
+    elif title:
+        cursor.execute("UPDATE goals SET title = ? WHERE goal_id = ? AND set_by_id = ?", (title, goal_id, user_id))
+    elif state:
+        cursor.execute("UPDATE goals SET state = ? WHERE goal_id = ? AND set_by_id = ?", (state, goal_id, user_id))
+    con.commit()
+
+def update_habit(habit_id, user_id, title, quantitative, unit, timespan):
+    """Updates an existing habit's details."""
+    cursor.execute("""
+    UPDATE habits
+    SET title = ?, quantitative = ?, unit = ?, timespan = ?
+    WHERE habit_id = ? AND set_by_id = ?
+    """, (title, quantitative, unit, timespan, habit_id, user_id))
+    con.commit()
+
+
+# Data Delete Queries
+
+def delete_goal(goal_id, user_id):
+    """Deletes a goal given its ID and owning user."""
+    cursor.execute("DELETE FROM goals WHERE goal_id = ? AND set_by_id = ?", (goal_id, user_id))
+    con.commit()
+
+def delete_habit(habit_id, user_id):
+    """Deletes a habit (habit_logs cascade automatically)."""
+    cursor.execute("DELETE FROM habits WHERE habit_id = ? AND set_by_id = ?", (habit_id, user_id))
+    con.commit()
+
+
+# Data Retrieval Queries
+
 def get_finished_tasks_user(user):
-    cursor.execute(f"""
-    SELECT COUNT (*) FROM goals WHERE set_by_id = {user} AND state = 'Completed'
-    """)
+    cursor.execute("SELECT COUNT (*) FROM goals WHERE set_by_id = ? AND state = 'Completed'", (user,))
     return cursor.fetchone()[0]
 
 def get_pending_tasks_user(user):
-    cursor.execute(f"""
-        SELECT COUNT(*)
-        FROM goals
-        WHERE set_by_id = {user}
-          AND state = 'Pending'
-    """)
+    cursor.execute("SELECT COUNT(*) FROM goals WHERE set_by_id = ? AND state = 'Pending'", (user,))
     return cursor.fetchone()[0]
 
 def get_in_progress_tasks_user(user):
-    cursor.execute(f"""
-        SELECT COUNT(*)
-        FROM goals
-        WHERE set_by_id = {user}
-          AND state = 'In Progress'
-    """)
+    cursor.execute("SELECT COUNT(*) FROM goals WHERE set_by_id = ? AND state = 'In Progress'", (user,))
     return cursor.fetchone()[0]
 
 def get_total_habit_prgresses_with_unit_by_user(user):
-    cursor.execute(f'''
+    cursor.execute("""
     SELECT habits.title, SUM(habit_logs.progress_quantity), habits.unit
     FROM habit_logs
-    JOIN habits
-    ON habit_logs.habit_id = habits.habit_id
-    WHERE habits.quantitative = 'true' AND set_by_id = {user}
+    JOIN habits ON habit_logs.habit_id = habits.habit_id
+    WHERE habits.quantitative = 'true' AND habits.set_by_id = ?
     GROUP BY habits.title
-    ''')
+    """, (user,))
     return cursor.fetchall()
 
 def get_count_non_qualitative_habits_user(user):
-    cursor.execute(f"""
-    SELECT habits.title, COUNT(habit_logs.habit_log_id) AS log_count FROM habits
-    LEFT JOIN habit_logs
-    ON habits.habit_id = habit_logs.habit_id
+    cursor.execute("""
+    SELECT habits.title, COUNT(habit_logs.habit_log_id) AS log_count 
+    FROM habits
+    LEFT JOIN habit_logs ON habits.habit_id = habit_logs.habit_id
     WHERE habits.set_by_id = ? AND habits.quantitative = 'false'
     GROUP BY habits.habit_id, habits.title;
-    """,(user, ))
+    """, (user,))
     return cursor.fetchall()
 
 def create_user(username, password, email):
@@ -385,7 +400,6 @@ def create_user(username, password, email):
     INSERT INTO users(name, password, email)
     VALUES (?, ?, ?)
     """, (username, password, email))
-
     con.commit()
 
 def check_user(username, password, email):
@@ -393,12 +407,8 @@ def check_user(username, password, email):
     SELECT user_id FROM users
     WHERE name = ? AND password = ? AND email = ?
     """, (username, password, email))
-
     result = cursor.fetchone()
-
     if result:
         return result[0]  # return user_id
     else:
         return None
-
-
