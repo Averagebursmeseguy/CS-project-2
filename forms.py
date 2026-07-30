@@ -161,3 +161,24 @@ class DailyLog():
         dbman.create_new_habit_progress(self.current_user, selected_habit, int(time.time()), progress_val)
         print("Collected Habit Progress:", data_list)
         return data_list
+
+class GoalForm():
+    def __init__(self, master, current_user) -> None:
+        self.current_user = current_user
+        self.title_label = ttk.Label(master=master, font=font, text='Title of goal')
+        self.title_label.grid(row=0, column=0, padx=10, pady=10)
+
+        self.title_entry = ttk.Entry(font=font, master=master)
+        self.title_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        self.submit_goal_button = ttk.Button(master = master, text='Submit New Goal', command=self.get_goal_data)
+        self.submit_goal_button.grid(row=1, column=0, padx = 10, pady=10)
+
+    def get_goal_data(self):
+        title = self.title_entry.get()
+        state = 'Pending'
+        set_by = self.current_user
+
+        goal_list = [title, set_by, state]
+        print('Created goal:', goal_list)
+        dbman.create_new_goal(set_by, title, state)

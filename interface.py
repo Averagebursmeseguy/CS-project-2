@@ -113,9 +113,13 @@ class Interface():
         self.notebook.add(self.frame3, text="Create Habit")
         self.habit_form = forms.HabitForm(self.frame3, current_user=self.logged_in_user_id)
 
+        self.frame5 = ttk.Frame(self.notebook, width=self.frame_width, height=self.frame_height)
+        self.notebook.add(self.frame5, text='Create Goal')
+        self.goal_form  = forms.GoalForm(self.frame5, current_user=self.logged_in_user_id)
 
         self.frame4 = ttk.Frame(self.notebook, width=self.frame_width, height=self.frame_height)
         self.notebook.add(self.frame4, text="History")
+
 
         #historty label
         self.history_tab_label = ttk.Label(master=self.frame4,font=('Times New Roman', 20), text="History")
@@ -434,6 +438,7 @@ class LoginPanel():
         username = self.login_username_entry.get()
 
         userID = dbman.check_user(username, password, email)
+        print(userID)
 
         if userID:
             self.login_window.destroy()

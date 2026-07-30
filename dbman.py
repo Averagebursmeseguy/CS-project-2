@@ -455,6 +455,13 @@ def get_log_details_by_id(log_id):
 
     return cursor.fetchone()
 
+def create_new_goal(set_by, title, state):
+    cursor.execute("""
+    INSERT INTO goals(set_by_id, title, state)
+
+    VALUES (?, ?, ?)
+    """, (set_by, title, state))
+
 def update_goal(goal_id, title, state):
     cursor.execute("""
     UPDATE goals
