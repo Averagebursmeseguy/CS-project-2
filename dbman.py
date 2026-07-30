@@ -380,4 +380,12 @@ def get_count_non_qualitative_habits_user(user):
     """,(user, ))
     return cursor.fetchall()
 
+def create_user(username, password, email):
+    cursor.execute("""
+    INSERT INTO users(name, password, email)
+    VALUES (?, ?, ?)
+    """, (username, password, email))
+
+    con.commit()
+
 

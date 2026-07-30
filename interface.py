@@ -98,6 +98,12 @@ class LoginPanel():
         self.login_username_entry = ttk.Entry(font=self.font)
         self.login_username_entry.pack()
 
+        self.login_email_label = ttk.Label(font=self.font, text='Email')
+        self.login_email_label.pack()
+        
+        self.login_email_entry = ttk.Entry(font=self.font)
+        self.login_email_entry.pack()
+
         self.login_password_label = ttk.Label(font=self.font, text='Password')
         self.login_password_label.pack()
         
@@ -106,6 +112,7 @@ class LoginPanel():
 
         self.sign_in_button = ttk.Button(text="Log In", command=self.check_login)
         self.sign_in_button.pack(pady=10)
+
         self.sign_up_button = ttk.Button(text="Sign Up", command = self.check_sign_up)
         self.sign_up_button.pack(pady = 10)
 
@@ -113,7 +120,15 @@ class LoginPanel():
         self.login_window.mainloop()
 
     def check_login(self):
-        print('hello')
+        password = self.login_password_entry.get()
+        email = self.login_email_entry.get()
+        username = self.login_username_entry.get()
+
+        return [password, email, username]
 
     def check_sign_up(self):
-        print("hello")
+        password = self.login_password_entry.get()
+        email = self.login_email_entry.get()
+        username = self.login_username_entry.get()
+        dbman.create_user(username, password, email)
+
