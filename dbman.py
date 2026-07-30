@@ -410,3 +410,47 @@ def get_goals_by_user(user):
 
     return cursor.fetchall()
 
+def get_log_by_user(user):
+    cursor.execute("""
+    SELECT title, date_created
+    FROM daily_logs
+    WHERE set_by_id = ?
+    """, (user,))
+
+    return cursor.fetchall()
+
+def update_goal(goal_id, title, state):
+    cursor.execute("""
+    UPDATE goals
+    SET title = ?, state = ?
+    WHERE goal_id = ?
+    """, (title, state, goal_id))
+
+    con.commit()
+
+def delete_goal(goal_id):
+    cursor.execute("""
+    DELETE FROM goals
+    WHERE goal_id = ?
+    """, (goal_id,))
+
+    con.commit()
+
+def update_daily_log(log_id, title, content, mood):
+    cursor.execute("""
+    UPDATE daily_logs
+    SET title = ?,
+        content = ?,
+        mood_score = ?
+    WHERE log_id = ?
+    """, (title, content, mood, log_id))
+
+    con.commit()
+
+def delete_daily_log(log_id):
+    cursor.execute("""
+    DELETE FROM daily_logs
+    WHERE log_id = ?
+    """, (log_id,))
+
+    con.commit()

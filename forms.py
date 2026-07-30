@@ -31,6 +31,7 @@ class HabitForm():
         self.timespan_label = ttk.Label(text="Timespan", font=font, master=self.master)
         self.timespan_input = ttk.Combobox(
             master=self.master,
+                    state="readonly",
             values=['daily', 'weekly', 'monthly', 'yearly']
         )
 
@@ -114,7 +115,7 @@ class DailyLog():
         self.habit_progress_frame = ttk.Frame(master=self.master)
 
         self.habit_to_log_label = ttk.Label(text="Habit progress to log", font=font, master=self.habit_progress_frame)
-        self.habit_to_log_entry = ttk.Combobox(values=['a', 'b', 'v'], master=self.habit_progress_frame)
+        self.habit_to_log_entry = ttk.Combobox(values=['a', 'b', 'v'], master=self.habit_progress_frame, state="readonly")
 
         self.progress_log_label = ttk.Label(text="Dynamically generated.", font=font, master=self.habit_progress_frame)
         self.progress_entry = ttk.Entry(master=self.habit_progress_frame)

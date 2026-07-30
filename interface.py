@@ -64,6 +64,70 @@ class Interface():
         self.history_log_table.heading('2', text='Date Created')
         self.history_log_table.grid(row=1, column=2)
 
+        #goal selector
+        self.goal_selector = ttk.Combobox(
+        self.frame4,
+        state="readonly",
+        width=30
+        )
+        self.goal_selector.config(
+        values=dbman.fetch_column_by_user(
+        "goals",
+        "title",
+        self.logged_in_user_id
+        )
+        )
+        self.goal_selector.grid(row=2, column=0)
+
+        #log selector
+        self.log_selector = ttk.Combobox(
+        self.frame4,
+        state="readonly",
+        width=30
+        )
+        self.log_selector.config(
+        values=dbman.fetch_column_by_user(
+        "daily_logs",
+        "title",
+        self.logged_in_user_id
+        )
+        )
+        self.log_selector.grid(row=2, column=2)
+
+        #log viewer
+        self.log_content_view = tkinter.Text(
+            self.frame4,
+            width=60,
+            height=15,
+            wrap="word"
+        )
+        self.log_content_view.grid(row = 3, column=2)
+
+        self.goal_update_button = ttk.Button(
+            self.frame4,
+            text="Update Goal",
+            )
+        self.goal_update_button.grid(row=3, column=0)
+
+        self.goal_delete_button = ttk.Button(
+            self.frame4,
+            text="Delete Goal",
+            )
+        self.goal_delete_button.grid(row=4, column=0)
+
+        self.log_update_button = ttk.Button(
+            self.frame4,
+            text="Update Log",
+            )
+        self.log_update_button.grid(row=4, column=2)
+
+        self.log_delete_button = ttk.Button(
+            self.frame4,
+            text="Delete Log",
+            )
+        self.log_delete_button.grid(row=5, column=2)
+
+        #bindings and things 
         self.notebook.bind("<<NotebookTabChanged>>", self.handle_tab_change)
         dbman.make_dest_data()
 
@@ -101,6 +165,28 @@ class Interface():
         hobbies = dbman.fetch_unique('title', self.logged_in_user_id, 'habits', True)
         self.log_form.habit_to_log_entry.config(values=hobbies) #no idea what's wrong with this one. Pylance prolly trippin
 
+    def refresh_tab_4(self):
+            for item in self.history_goal_table.get_children():
+                self.history_goal_table.delete(item)
+
+            for goal in dbman.get_goals_by_user(self.logged_in_user_id):
+                self.history_goal_table.insert(
+                    "",
+                    "end",
+                    values=goal
+                )
+
+            for item in self.history_log_table.get_children():
+                self.history_log_table.delete(item)
+
+            for item in dbman.get_log_by_user(self.logged_in_user_id):
+                self.history_log_table.insert(
+                    "",
+                    "end",
+                    values=item
+                )
+
+        
 
     # Executes on tab change, used to call various helper scripts
     def handle_tab_change(self, event):
@@ -111,6 +197,9 @@ class Interface():
 
             case "Dashboard":
                 self.refresh_tab_1()
+
+            case "History":
+                self.refresh_tab_4()
 
     def run_interface(self):
         self.window.mainloop()
