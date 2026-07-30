@@ -5,8 +5,8 @@ import forms, dbman, visualizer
 class Interface():
     def __init__(self, user) -> None:       
         self.logged_in_user_id = user
-        self.frame_width = 1000
-        self.frame_height = 600
+        self.frame_width = 1500
+        self.frame_height = 800
 
         self.window = tkinter.Tk()
         self.window.geometry(f"{self.frame_width}x{self.frame_height}")
@@ -18,15 +18,22 @@ class Interface():
         # Individual tab descriptions. Put your UI elements here
         self.frame1 = ttk.Frame(self.notebook, width=self.frame_width, height=self.frame_height)
         self.current_goal_indicator = ttk.Label(text="no goals running", font=forms.font, master=self.frame1)
-        self.current_goal_indicator.pack()
+        self.current_goal_indicator.grid(row = 0, column = 0)
+
         self.non_qualitatives_table = ttk.Treeview(master = self.frame1, columns=("Habit done", "Times done"), show="headings")
-        self.non_qualitatives_table.pack()
+        self.non_qualitatives_table.heading("Habit done", text='Habit done')
+        self.non_qualitatives_table.heading('Times done', text="Times Done")
+        self.non_qualitatives_table.grid(row = 1, column= 1)
+
+        self.goal_table = ttk.Treeview(master = self.frame1, columns=('Goals', 'Status'), show='headings')
+        self.goal_table.heading('Goals', text='Goal')
+        self.goal_table.heading('Status', text='Status')
+        self.goal_table.grid(row = 1, column=0)
 
         self.notebook.add(self.frame1, text="Dashboard")
 
         # Visualizer instance embedded in Dashboard (frame1)
         self.mood_graph = visualizer.WellnessVisualizer(self.frame1)
-
 
         self.frame2 = ttk.Frame(self.notebook, width=self.frame_width, height=self.frame_height)
         self.notebook.add(self.frame2, text="Log Progress")
@@ -55,6 +62,16 @@ class Interface():
 
         for habit in dbman.get_count_non_qualitative_habits_user(self.logged_in_user_id):
             self.non_qualitatives_table.insert("", "end", values=habit)
+
+        for item in self.goal_table.get_children():
+            self.goal_table.delete(item)
+
+        for goal in dbman.get_goals_by_user(self.logged_in_user_id):
+            self.goal_table.insert(
+                "",
+                "end",
+                values=goal
+            )
         
         goals_being_done = dbman.count_columns_by_user('goal_id','goals', self.logged_in_user_id)
         self.current_goal_indicator.config(text=f'''{goals_being_done} goals total, {dbman.get_finished_tasks_user(self.logged_in_user_id)} done, {dbman.get_pending_tasks_user(self.logged_in_user_id)} pending, {dbman.get_in_progress_tasks_user(self.logged_in_user_id)} tasks in progress.''')

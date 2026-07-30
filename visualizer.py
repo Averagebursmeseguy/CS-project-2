@@ -35,7 +35,7 @@ class WellnessVisualizer:
         #  Embed the plot inside the Tkinter parent frame
         canvas = FigureCanvasTkAgg(fig, master=self.parent)
         self.canvas_widget = canvas.get_tk_widget()
-        self.canvas_widget.pack(side='left', expand=True)
+        self.canvas_widget.grid(row = 3, column = 1)
         canvas.draw()
         
         return self.canvas_widget
@@ -85,7 +85,7 @@ class WellnessVisualizer:
         # Embedes the plot inside the Tkinter parent frame
         canvas = FigureCanvasTkAgg(fig, master=self.parent)
         self.canvas_widget2 = canvas.get_tk_widget()
-        self.canvas_widget2.pack(side = 'right', expand=True)
+        self.canvas_widget2.grid(row=3, column=0)
         canvas.draw()
         
         return self.canvas_widget2
