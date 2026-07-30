@@ -48,6 +48,22 @@ class Interface():
         self.frame4 = ttk.Frame(self.notebook, width=self.frame_width, height=self.frame_height)
         self.notebook.add(self.frame4, text="History")
 
+        #historty label
+        self.history_tab_label = ttk.Label(master=self.frame4,font=('Times New Roman', 20), text="History")
+        self.history_tab_label.grid(row=0, column=1)
+
+        #Goal table for history
+        self.history_goal_table = ttk.Treeview(master = self.frame4, columns=('Goals', 'Status'), show='headings')
+        self.history_goal_table.heading('Goals', text='Goal')
+        self.history_goal_table.heading('Status', text='Status')
+        self.history_goal_table.grid(row = 1, column=0)
+
+        #log table
+        self.history_log_table = ttk.Treeview(master = self.frame4, columns=('1', '2'), show='headings')
+        self.history_log_table.heading('1', text="Title")
+        self.history_log_table.heading('2', text='Date Created')
+        self.history_log_table.grid(row=1, column=2)
+
         self.notebook.bind("<<NotebookTabChanged>>", self.handle_tab_change)
         dbman.make_dest_data()
 
