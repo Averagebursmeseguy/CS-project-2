@@ -15,7 +15,7 @@ class HabitForm():
         # Variable to track the Checkbutton status (True = Checked, False = Unchecked)
         self.is_quant_var = tkinter.BooleanVar()
 
-        # --- UI WIDGETS ---
+
         # Title
         self.title_label = ttk.Label(master=self.master, text="Title", font=font)
         self.title_input = ttk.Entry(font=font, master=self.master)
@@ -43,7 +43,7 @@ class HabitForm():
             command=self.get_habit_data
         )
 
-        # --- GRID LAYOUT ---
+
         self.title_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         self.title_input.grid(row=0, column=1, padx=10, pady=10)
 
