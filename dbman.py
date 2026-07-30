@@ -301,8 +301,6 @@ def fetch_specific_data(table, column, query):
     """)
     return cursor.fetchone()[0]
 
-make_dest_data()
-
 #That's it I give up trying to larp having an ORM. Lost too many braincells. Specifics galore.
 def create_new_habit(user, title, quantitative, unit, timespan):
     print(f'{user}, {title}, {quantitative}, {unit}, {timespan}')

@@ -1,4 +1,8 @@
 import interface
+login = False
+login_window = interface.LoginPanel()
 
-main_app = interface.Interface(1)
-main_app.run_interface()
+login_window.run_login_window()
+
+if login:   
+    main_app = interface.Interface(1)

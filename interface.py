@@ -42,6 +42,7 @@ class Interface():
         self.notebook.add(self.frame4, text="History")
 
         self.notebook.bind("<<NotebookTabChanged>>", self.handle_tab_change)
+        dbman.make_dest_data()
 
     def refresh_tab_1(self):
         # Updates the dashboard graphics and total goals count
@@ -65,7 +66,7 @@ class Interface():
     def refresh_tab_2(self):
         # Dynamically changes habit log dropdown options.
         hobbies = dbman.fetch_unique('title', 'habits', True)
-        self.log_form.habit_to_log_entry.config(values=hobbies) 
+        self.log_form.habit_to_log_entry.config(values=hobbies) #no idea what's wrong with this one. Pylance prolly trippin
 
 
     # Executes on tab change, used to call various helper scripts
@@ -80,3 +81,39 @@ class Interface():
 
     def run_interface(self):
         self.window.mainloop()
+
+class LoginPanel():
+    def __init__(self) -> None:
+        self.login_window = tkinter.Tk()
+        self.login_window.geometry(f"800x600")
+        self.login_window.title("Login or Sign up")
+        self.font = ('Times New Roman', 15)
+
+        self.login_label = ttk.Label(font=self.font, text='Login or Sign up')
+        self.login_label.pack()
+
+        self.login_username_label = ttk.Label(font=self.font, text='Username')
+        self.login_username_label.pack()
+
+        self.login_username_entry = ttk.Entry(font=self.font)
+        self.login_username_entry.pack()
+
+        self.login_password_label = ttk.Label(font=self.font, text='Password')
+        self.login_password_label.pack()
+        
+        self.login_password_entry = ttk.Entry(font=self.font)
+        self.login_password_entry.pack()
+
+        self.sign_in_button = ttk.Button(text="Log In", command=self.check_login)
+        self.sign_in_button.pack(pady=10)
+        self.sign_up_button = ttk.Button(text="Sign Up", command = self.check_sign_up)
+        self.sign_up_button.pack(pady = 10)
+
+    def run_login_window(self):
+        self.login_window.mainloop()
+
+    def check_login(self):
+        print('hello')
+
+    def check_sign_up(self):
+        print("hello")
