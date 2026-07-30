@@ -1,66 +1,90 @@
 import sqlite3
 
+# Initialize Database Connection
 con = sqlite3.connect("app.db")
 con.execute("PRAGMA foreign_keys = ON;")
 cursor = con.cursor()
 
-# adding passwords because *someone* has to learn about salting and encrypt
-cursor.execute("""CREATE TABLE IF NOT EXISTS users(
-user_id INTEGER PRIMARY KEY AUTOINCREMENT,
- name TEXT NOT NULL,
- password TEXT NOT NULL,
- email VARCHAR NOT NULL UNIQUE
-);""")
+# ----------------------------------------------------------------------
+# 1. TABLE CREATION
+# ----------------------------------------------------------------------
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS habits(
-habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
-set_by_id INTEGER NOT NULL,
-title VARCHAR NOT NULL,
-quantitative VARCHAR NOT NULL CHECK(quantitative IN('true', 'false')),
-unit VARCHAR,
-timespan TEXT NOT NULL CHECK(timespan IN ('daily', 'weekly', 'monthly', 'yearly')),
-CHECK((quantitative = 'true' AND unit IS NOT NULL) OR (quantitative = 'false' AND unit IS NULL)),
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users(
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    password TEXT NOT NULL,
+    email VARCHAR NOT NULL UNIQUE
+);
+""")
 
-FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
-)""")
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS habits(
+    habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_by_id INTEGER NOT NULL,
+    title VARCHAR NOT NULL,
+    quantitative VARCHAR NOT NULL CHECK(quantitative IN('true', 'false')),
+    unit VARCHAR,
+    timespan TEXT NOT NULL CHECK(timespan IN ('daily', 'weekly', 'monthly', 'yearly')),
+    CHECK((quantitative = 'true' AND unit IS NOT NULL) OR (quantitative = 'false' AND unit IS NULL)),
+    FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+""")
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS habit_logs(
-habit_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
-habit_id INTEGER NOT NULL,
-timestamp INTEGER NOT NULL,
-progress_quantity REAL CHECK((progress_quantity IS NULL OR progress_quantity >= 0.0)),
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS habit_logs(
+    habit_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    habit_id INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL,
+    progress_quantity REAL CHECK(progress_quantity IS NULL OR progress_quantity >= 0.0),
+    FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE CASCADE
+);
+""")
 
-FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE CASCADE
-)""")
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS goals(
+    goal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_by_id INTEGER NOT NULL,
+    title VARCHAR NOT NULL,
+    state VARCHAR NOT NULL CHECK(state IN('Pending', 'In Progress', 'Completed')),
+    FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+""")
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS goals(
-goal_id INTEGER PRIMARY KEY AUTOINCREMENT,
-set_by_id INTEGER NOT NULL,
-title VARCHAR NOT NULL,
-state VARCHAR NOT NULL CHECK(state IN('Pending', 'In Progress', 'Completed')),
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS daily_logs(
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_by_id INTEGER NOT NULL,
+    title VARCHAR NOT NULL,
+    content TEXT NOT NULL,
+    date_created TEXT NOT NULL,
+    mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
+    FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+""")
 
-FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
-);""")
+# ----------------------------------------------------------------------
+# 2. SECURITY & UTILITY HELPERS
+# ----------------------------------------------------------------------
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS daily_logs(
-log_id INTEGER PRIMARY KEY AUTOINCREMENT,
-set_by_id INTEGER NOT NULL,
-title VARCHAR NOT NULL,
-content TEXT NOT NULL,
-date_created TEXT NOT NULL,
-mood_score INTEGER CHECK(mood_score BETWEEN 1 AND 10),
+ALLOWED_TABLES = {"users", "habits", "habit_logs", "goals", "daily_logs"}
 
-FOREIGN KEY (set_by_id) REFERENCES users(user_id) ON DELETE CASCADE
-);""")
+def sanitize_identifier(name: str) -> str:
+    """Ensures dynamic column/table identifiers are strictly alphanumeric/underscore to prevent injection."""
+    if not name.isidentifier():
+        raise ValueError(f"Invalid SQL identifier: {name}")
+    return name
 
-# Seed data creation script
+# ----------------------------------------------------------------------
+# 3. SEED DATA CREATION
+# ----------------------------------------------------------------------
 
 def make_dest_data():
     cursor.execute("SELECT * FROM users WHERE name = ?", ('test_user',))
     if cursor.fetchone():
-        print('test data exists. Skipped making.')
+        print('Test data already exists. Skipping insertion.')
     else:
-        print('No test data. Making...')
+        print('No test data found. Creating test seed data...')
 
         cursor.execute("""
         INSERT INTO users(name, password, email)
@@ -94,7 +118,7 @@ def make_dest_data():
 
         cursor.execute("""
         INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
-        VALUES(1, 'log1', 'this is a test log used for testing', '2000-01-1', 5);
+        VALUES(1, 'log1', 'this is a test log used for testing', '2000-01-01', 5);
         """)
 
         cursor.execute("""
@@ -123,7 +147,7 @@ def make_dest_data():
         """)
 
         cursor.execute("""
-        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score )
+        INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
         VALUES(1, 'log2', 'Completed my habits and felt productive today.', '2000-01-02', 8);
         """)
 
@@ -257,38 +281,58 @@ def make_dest_data():
         VALUES(4, 1234567895, 25);
         """)
 
-        print('test data made')
+        print('Test data generated successfully.')
         con.commit()
 
+# ----------------------------------------------------------------------
+# 4. SECURE DYNAMIC FETCH HELPERS
+# ----------------------------------------------------------------------
 
-# Safe parametrized database helper functions
+def fetch_unique(item: str, user: int, table: str, nocolumn: bool) -> list[str] | list[tuple] | None:
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Unauthorized table access: {table}")
+    item = sanitize_identifier(item)
 
-def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
-    # Allowed tables/items safety check for identifiers
     cursor.execute(f"SELECT DISTINCT {item} FROM {table} WHERE set_by_id = ?", (user,))
     if not nocolumn:
         return cursor.fetchall()
     return [row[0] for row in cursor.fetchall()]
 
-def count_columns_by_user(column_to_count, table, userID):
-    cursor.execute(f"SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = ?", (userID,))
+def count_columns_by_user(column_to_count: str, table: str, userID: int) -> int:
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Unauthorized table access: {table}")
+    column_to_count = sanitize_identifier(column_to_count)
+
+    cursor.execute(f"SELECT COUNT({column_to_count}) FROM {table} WHERE set_by_id = ?", (userID,))
     return cursor.fetchone()[0]
 
-def fetch_column_by_user(table, column, userID):
+def fetch_column_by_user(table: str, column: str, userID: int) -> list:
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Unauthorized table access: {table}")
+    column = sanitize_identifier(column)
+
     cursor.execute(f"SELECT {column} FROM {table} WHERE set_by_id = ?", (userID,))
     return [row[0] for row in cursor.fetchall()]
 
-def fetch_table_info(table):
-    cursor.execute(f"PRAGMA table_info({table})")
-    columns = [row[1] for row in cursor.fetchall()]
-    return columns
+def fetch_table_info(table: str) -> list[str]:
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Unauthorized table access: {table}")
 
-def fetch_specific_data(table, column, query):
+    cursor.execute(f"PRAGMA table_info({table})")
+    return [row[1] for row in cursor.fetchall()]
+
+def fetch_specific_data(table: str, column: str, query: str):
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Unauthorized table access: {table}")
+    column = sanitize_identifier(column)
+
     cursor.execute(f"SELECT {column} FROM {table} WHERE {column} = ?", (query,))
     res = cursor.fetchone()
     return res[0] if res else None
 
-# Data Creation Queries
+# ----------------------------------------------------------------------
+# 5. DATA CREATION QUERIES
+# ----------------------------------------------------------------------
 
 def create_new_goal(user, title, state='Pending'):
     cursor.execute("""
@@ -325,11 +369,11 @@ def create_new_habit_progress(user, title, timestamp, progress_quantity):
     """, (target_id, timestamp, progress_quantity))
     con.commit()
 
-
-# Data Update Queries
+# ----------------------------------------------------------------------
+# 6. DATA UPDATE QUERIES
+# ----------------------------------------------------------------------
 
 def update_goal(goal_id, user_id, title=None, state=None):
-    """Updates an existing goal's title and/or state."""
     if title and state:
         cursor.execute("UPDATE goals SET title = ?, state = ? WHERE goal_id = ? AND set_by_id = ?", (title, state, goal_id, user_id))
     elif title:
@@ -339,7 +383,6 @@ def update_goal(goal_id, user_id, title=None, state=None):
     con.commit()
 
 def update_habit(habit_id, user_id, title, quantitative, unit, timespan):
-    """Updates an existing habit's details."""
     cursor.execute("""
     UPDATE habits
     SET title = ?, quantitative = ?, unit = ?, timespan = ?
@@ -347,24 +390,24 @@ def update_habit(habit_id, user_id, title, quantitative, unit, timespan):
     """, (title, quantitative, unit, timespan, habit_id, user_id))
     con.commit()
 
-
-# Data Delete Queries
+# ----------------------------------------------------------------------
+# 7. DATA DELETE QUERIES
+# ----------------------------------------------------------------------
 
 def delete_goal(goal_id, user_id):
-    """Deletes a goal given its ID and owning user."""
     cursor.execute("DELETE FROM goals WHERE goal_id = ? AND set_by_id = ?", (goal_id, user_id))
     con.commit()
 
 def delete_habit(habit_id, user_id):
-    """Deletes a habit (habit_logs cascade automatically)."""
     cursor.execute("DELETE FROM habits WHERE habit_id = ? AND set_by_id = ?", (habit_id, user_id))
     con.commit()
 
-
-# Data Retrieval Queries
+# ----------------------------------------------------------------------
+# 8. DATA RETRIEVAL QUERIES
+# ----------------------------------------------------------------------
 
 def get_finished_tasks_user(user):
-    cursor.execute("SELECT COUNT (*) FROM goals WHERE set_by_id = ? AND state = 'Completed'", (user,))
+    cursor.execute("SELECT COUNT(*) FROM goals WHERE set_by_id = ? AND state = 'Completed'", (user,))
     return cursor.fetchone()[0]
 
 def get_pending_tasks_user(user):
@@ -408,17 +451,12 @@ def check_user(username, password, email):
     WHERE name = ? AND password = ? AND email = ?
     """, (username, password, email))
     result = cursor.fetchone()
-    if result:
-        return result[0]  # return user_id
-    else:
-        return None
+    return result[0] if result else None
 
-#Removing this breaks UI. 
 def get_goals_by_user(user):
     cursor.execute("""
     SELECT title, state
     FROM goals
     WHERE set_by_id = ?
     """, (user,))
-
     return cursor.fetchall()
