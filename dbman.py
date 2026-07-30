@@ -267,7 +267,7 @@ def make_dest_data():
         print('test data made')
         con.commit()
 
-# Parameterized query functions to prevent SQL injection attacks.
+
 def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
     cursor.execute(f"""
     SELECT DISTINCT {item} FROM {table} WHERE set_by_id = ?
