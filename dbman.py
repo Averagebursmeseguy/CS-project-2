@@ -412,3 +412,13 @@ def check_user(username, password, email):
         return result[0]  # return user_id
     else:
         return None
+
+#Removing this breaks UI. 
+def get_goals_by_user(user):
+    cursor.execute("""
+    SELECT title, state
+    FROM goals
+    WHERE set_by_id = ?
+    """, (user,))
+
+    return cursor.fetchall()
