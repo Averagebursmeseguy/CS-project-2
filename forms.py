@@ -1,4 +1,5 @@
 import tkinter
+import time
 from tkinter import ttk
 import dbman
 
@@ -157,6 +158,6 @@ class DailyLog():
 
         data_list = [selected_habit, progress_val]
 
-        dbman.create_new_habit_progress(self.current_user, selected_habit,123122141 , progress_val)
+        dbman.create_new_habit_progress(self.current_user, selected_habit, int(time.time()), progress_val)
         print("Collected Habit Progress:", data_list)
         return data_list

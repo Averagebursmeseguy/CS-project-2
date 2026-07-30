@@ -267,11 +267,11 @@ def make_dest_data():
         print('test data made')
         con.commit()
 
-# Yes, I know this is injection attack galore. I do not care.
+# Parameterized query functions to prevent SQL injection attacks.
 def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
     cursor.execute(f"""
-    SELECT DISTINCT {item} FROM {table} WHERE set_by_id = {user}
-    """)
+    SELECT DISTINCT {item} FROM {table} WHERE set_by_id = ?
+    """, (user,))
 
     if not nocolumn:
         return cursor.fetchall()
@@ -280,14 +280,14 @@ def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
 
 def count_columns_by_user(column_to_count, table, userID):
     cursor.execute(f"""
-    SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = {userID}
-    """)
+    SELECT COUNT ({column_to_count}) FROM {table} WHERE set_by_id = ?
+    """, (userID,))
     return cursor.fetchone()[0]
 
 def fetch_column_by_user(table, column, userID):
     cursor.execute(f"""
-    SELECT {column} from {table} WHERE set_by_id = {userID}
-    """)
+    SELECT {column} from {table} WHERE set_by_id = ?
+    """, (userID,))
     return [row[0] for row in cursor.fetchall()]
 
 def fetch_table_info(table):
@@ -297,14 +297,14 @@ def fetch_table_info(table):
 
 def fetch_specific_data(table, column, query):
     cursor.execute(f"""
-    SELECT {column} FROM {table} where {column} = {query}
-    """)
+    SELECT {column} FROM {table} where {column} = ?
+    """, (query,))
     return cursor.fetchone()[0]
 
 #That's it I give up trying to larp having an ORM. Lost too many braincells. Specifics galore.
 def create_new_habit(user, title, quantitative, unit, timespan):
     print(f'{user}, {title}, {quantitative}, {unit}, {timespan}')
-    cursor.execute(f"""
+    cursor.execute("""
     INSERT INTO habits(set_by_id, title, quantitative, unit, timespan)
     VALUES (?, ?, ?, ?, ?);
     """, (user, title, quantitative, unit, timespan))
@@ -320,7 +320,7 @@ def create_new_daily_log(user, title, content, mood):
 
 def create_new_habit_progress(user, title, timestamp, progress_quantity):
 
-    cursor.execute(f"SELECT habit_id FROM habits WHERE title = '{title}' AND set_by_id = {user}")
+    cursor.execute("SELECT habit_id FROM habits WHERE title = ? AND set_by_id = ?", (title, user))
 
     result = cursor.fetchone()
     if result != None:
@@ -336,42 +336,42 @@ def create_new_habit_progress(user, title, timestamp, progress_quantity):
     con.commit()
 
 def get_finished_tasks_user(user):
-    cursor.execute(f"""
-    SELECT COUNT (*) FROM goals WHERE set_by_id = {user} AND state = 'Completed'
-    """)
+    cursor.execute("""
+    SELECT COUNT (*) FROM goals WHERE set_by_id = ? AND state = 'Completed'
+    """, (user,))
     return cursor.fetchone()[0]
 
 def get_pending_tasks_user(user):
-    cursor.execute(f"""
+    cursor.execute("""
         SELECT COUNT(*)
         FROM goals
-        WHERE set_by_id = {user}
+        WHERE set_by_id = ?
           AND state = 'Pending'
-    """)
+    """, (user,))
     return cursor.fetchone()[0]
 
 def get_in_progress_tasks_user(user):
-    cursor.execute(f"""
+    cursor.execute("""
         SELECT COUNT(*)
         FROM goals
-        WHERE set_by_id = {user}
+        WHERE set_by_id = ?
           AND state = 'In Progress'
-    """)
+    """, (user,))
     return cursor.fetchone()[0]
 
 def get_total_habit_prgresses_with_unit_by_user(user):
-    cursor.execute(f'''
+    cursor.execute('''
     SELECT habits.title, SUM(habit_logs.progress_quantity), habits.unit
     FROM habit_logs
     JOIN habits
     ON habit_logs.habit_id = habits.habit_id
-    WHERE habits.quantitative = 'true' AND set_by_id = {user}
+    WHERE habits.quantitative = 'true' AND set_by_id = ?
     GROUP BY habits.title
-    ''')
+    ''', (user,))
     return cursor.fetchall()
 
 def get_count_non_qualitative_habits_user(user):
-    cursor.execute(f"""
+    cursor.execute("""
     SELECT habits.title, COUNT(habit_logs.habit_log_id) AS log_count FROM habits
     LEFT JOIN habit_logs
     ON habits.habit_id = habit_logs.habit_id
@@ -410,6 +410,24 @@ def get_goals_by_user(user):
 
     return cursor.fetchall()
 
+def get_goals_with_id_by_user(user):
+    cursor.execute("""
+    SELECT goal_id, title, state
+    FROM goals
+    WHERE set_by_id = ?
+    """, (user,))
+
+    return cursor.fetchall()
+
+def get_goal_by_id(goal_id):
+    cursor.execute("""
+    SELECT goal_id, title, state
+    FROM goals
+    WHERE goal_id = ?
+    """, (goal_id,))
+
+    return cursor.fetchone()
+
 def get_log_by_user(user):
     cursor.execute("""
     SELECT title, date_created
@@ -418,6 +436,24 @@ def get_log_by_user(user):
     """, (user,))
 
     return cursor.fetchall()
+
+def get_log_with_id_by_user(user):
+    cursor.execute("""
+    SELECT log_id, title, date_created
+    FROM daily_logs
+    WHERE set_by_id = ?
+    """, (user,))
+
+    return cursor.fetchall()
+
+def get_log_details_by_id(log_id):
+    cursor.execute("""
+    SELECT log_id, title, content, date_created, mood_score
+    FROM daily_logs
+    WHERE log_id = ?
+    """, (log_id,))
+
+    return cursor.fetchone()
 
 def update_goal(goal_id, title, state):
     cursor.execute("""
