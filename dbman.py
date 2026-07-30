@@ -268,9 +268,9 @@ def make_dest_data():
         con.commit()
 
 # Yes, I know this is injection attack galore. I do not care.
-def fetch_unique(item, table, nocolumn) -> list[str] | list[tuple] | None:
+def fetch_unique(item, user, table, nocolumn) -> list[str] | list[tuple] | None:
     cursor.execute(f"""
-    SELECT DISTINCT {item} FROM {table}
+    SELECT DISTINCT {item} FROM {table} WHERE set_by_id = {user}
     """)
 
     if not nocolumn:
@@ -387,5 +387,18 @@ def create_user(username, password, email):
     """, (username, password, email))
 
     con.commit()
+
+def check_user(username, password, email):
+    cursor.execute("""
+    SELECT user_id FROM users
+    WHERE name = ? AND password = ? AND email = ?
+    """, (username, password, email))
+
+    result = cursor.fetchone()
+
+    if result:
+        return result[0]  # return user_id
+    else:
+        return None
 
 

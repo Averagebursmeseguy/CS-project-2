@@ -65,7 +65,7 @@ class Interface():
 
     def refresh_tab_2(self):
         # Dynamically changes habit log dropdown options.
-        hobbies = dbman.fetch_unique('title', 'habits', True)
+        hobbies = dbman.fetch_unique('title', self.logged_in_user_id, 'habits', True)
         self.log_form.habit_to_log_entry.config(values=hobbies) #no idea what's wrong with this one. Pylance prolly trippin
 
 
@@ -124,7 +124,15 @@ class LoginPanel():
         email = self.login_email_entry.get()
         username = self.login_username_entry.get()
 
-        return [password, email, username]
+        userID = dbman.check_user(username, password, email)
+
+        if userID:
+            self.login_window.destroy()
+            app = Interface(userID)
+            app.run_interface()
+
+        else:
+            print('error or sumn idk')
 
     def check_sign_up(self):
         password = self.login_password_entry.get()

@@ -3,6 +3,3 @@ login = False
 login_window = interface.LoginPanel()
 
 login_window.run_login_window()
-
-if login:   
-    main_app = interface.Interface(1)
