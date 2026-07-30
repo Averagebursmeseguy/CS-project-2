@@ -312,6 +312,31 @@ def create_new_habit(user, title, quantitative, unit, timespan):
     """, (user, title, quantitative, unit, timespan))
     con.commit()
 
+def create_new_daily_log(user, title, content, mood):
+    cursor.execute("""
+    INSERT INTO daily_logs(set_by_id, title, content, date_created, mood_score)
+    VALUES (?, ?, ?, DATE('now'), ?)
+    """, (user, title, content, mood))
+
+    con.commit()
+
+def create_new_habit_progress(user, title, timestamp, progress_quantity):
+
+    cursor.execute(f"SELECT habit_id FROM habits WHERE title = '{title}' AND set_by_id = {user}")
+
+    result = cursor.fetchone()
+    if result != None:
+        target_id = result[0]
+    else:
+        return
+
+    cursor.execute("""
+    INSERT INTO habit_logs(habit_id, timestamp, progress_quantity)
+    VALUES (?, ?, ?)
+    """, (target_id, timestamp, progress_quantity))
+
+    con.commit()
+
 def get_finished_tasks_user(user):
     cursor.execute(f"""
     SELECT COUNT (*) FROM goals WHERE set_by_id = {user} AND state = 'Completed'
@@ -347,4 +372,14 @@ def get_total_habit_prgresses_with_unit_by_user(user):
     ''')
     return cursor.fetchall()
 
-print(get_total_habit_prgresses_with_unit_by_user(1))
+def get_count_non_qualitative_habits_user(user):
+    cursor.execute(f"""
+    SELECT habits.title, COUNT(habit_logs.habit_log_id) AS log_count FROM habits
+    LEFT JOIN habit_logs
+    ON habits.habit_id = habit_logs.habit_id
+    WHERE habits.set_by_id = ? AND habits.quantitative = 'false'
+    GROUP BY habits.habit_id, habits.title;
+    """,(user, ))
+    return cursor.fetchall()
+
+

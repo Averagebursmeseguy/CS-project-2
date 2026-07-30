@@ -75,8 +75,9 @@ class HabitForm():
 
 
 class DailyLog():
-    def __init__(self, master) -> None:
+    def __init__(self, master, current_user) -> None:
         self.master = master
+        self.current_user = current_user
         
         # --- MOOD LOG FRAME (Right Side) ---
         self.mood_log_frame = ttk.Frame(master=self.master)
@@ -145,9 +146,8 @@ class DailyLog():
         content = self.content_entry.get("1.0", "end-1c")
         mood_score = round(self.mood_scale.get())
 
-        data_list = [title, content, mood_score]
-        print("Collected Mood Log:", data_list)
-        return data_list
+        print(f'{self.current_user}, {title}, {content}, {mood_score}')
+        dbman.create_new_daily_log(self.current_user, title, content, mood_score)
 
     def get_habit_progress_data(self):
         """Extracts data from the Habit Progress section as a list."""
@@ -155,5 +155,7 @@ class DailyLog():
         progress_val = self.progress_entry.get()
 
         data_list = [selected_habit, progress_val]
+
+        dbman.create_new_habit_progress(self.current_user, selected_habit,123122141 , progress_val)
         print("Collected Habit Progress:", data_list)
         return data_list

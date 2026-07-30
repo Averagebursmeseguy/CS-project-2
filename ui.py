@@ -11,12 +11,13 @@ window.geometry(f"{frame_width}x{frame_height}")
 window.title("CS habit tracker")
 
 notebook = ttk.Notebook(window)
-notebook.pack(pady=10, padx=20, expand=True)
+notebook.pack(fill = 'both', expand=True)
                 
 # Individual tab descriptions. Put your UI elements here
 frame1 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 current_goal_indicator = ttk.Label(text="no goals running", font=forms.font, master=frame1)
 current_goal_indicator.pack()
+non_qualitatives_table = ttk.Treeview(master = frame1, columns=("Habit done", "Times done"), show="headings")
 
 notebook.add(frame1, text="Dashboard")
 
@@ -26,7 +27,7 @@ mood_graph = visualizer.WellnessVisualizer(frame1)
 
 frame2 = ttk.Frame(notebook, width=frame_width, height=frame_height)
 notebook.add(frame2, text="Log Progress")
-log_form = forms.DailyLog(frame2)
+log_form = forms.DailyLog(frame2, 1)
 
 
 frame3 = ttk.Frame(notebook, width=frame_width, height=frame_height)
@@ -43,11 +44,20 @@ def refresh_tab_1():
     moods = dbman.fetch_column_by_user("daily_logs", "mood_score", 1)
     days = dbman.fetch_column_by_user('daily_logs', 'date_created', 1)
 
+    if non_qualitatives_table.get_children() != ():
+        for item in non_qualitatives_table.get_children():
+            non_qualitatives_table.delete(item)
+    else:
+        pass
+
+    for habit in dbman.get_count_non_qualitative_habits_user(1):
+        non_qualitatives_table.insert("", "end", values=habit)
+    non_qualitatives_table.pack()
+
     goals_being_done = dbman.count_columns_by_user('goal_id','goals', 1)
     current_goal_indicator.config(text=f'''{goals_being_done} goals total, {dbman.get_finished_tasks_user(1)} done, {dbman.get_pending_tasks_user(1)} pending, {dbman.get_in_progress_tasks_user(1)} tasks in progress.''')
     
     mood_graph.draw_mood_trend(days, moods, 'mood graph')
-
     mood_graph.draw_habit_progress(dbman.get_total_habit_prgresses_with_unit_by_user(1))
 
 
